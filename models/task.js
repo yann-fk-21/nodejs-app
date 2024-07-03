@@ -7,11 +7,7 @@ const taskSchema = new Schema({
     type: String,
     required: true,
   },
-  description: {
-    tytpe: String,
-    required: true,
-  },
-  status: {
+  completed: {
     type: Boolean,
     required: true,
   },
