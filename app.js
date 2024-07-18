@@ -9,8 +9,7 @@ const uuid = require("uuid");
 const feedRoutes = require("./routes/feed");
 const authRoutes = require("./routes/auth");
 
-const MONGODB_URI =
-  "mongodb+srv://yann:loulou1@cluster0.lajrlny.mongodb.net/posts_db?retryWrites=true&w=majority&appName=Cluster0";
+const MONGODB_URI
 
 const app = express();
 const storage = multer.diskStorage({
