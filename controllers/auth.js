@@ -1,8 +1,11 @@
-const { validationResult } = require("express-validator");
-const bcrypt = require("bcryptjs");
-const jwt = require("jsonwebtoken");
+const { validationResult } = require('express-validator');
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 
-const User = require("../models/user");
+const User = require('../models/user');
+
+const { contentEmailSignIn } = require('../constant/email-message');
+const sendEmail = require('../utils/notification');
 
 exports.signup = async (req, res, next) => {
   const userName = req.body.name;
@@ -11,7 +14,7 @@ exports.signup = async (req, res, next) => {
 
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
-    const error = new Error("Invalid inputs");
+    const error = new Error('Invalid inputs');
     error.statusCode = 422;
     error.data = errors.array();
     return next(error);
@@ -20,7 +23,7 @@ exports.signup = async (req, res, next) => {
   try {
     const foundUser = await User.findOne({ email: userEmail });
     if (foundUser) {
-      const error = new Error("user already exist, please sign in");
+      const error = new Error('user already exist, please sign in');
       error.statusCode = 422;
       throw error;
     }
@@ -32,9 +35,10 @@ exports.signup = async (req, res, next) => {
       name: userName,
     });
     const newUser = await createdUser.save();
+    sendEmail.bind(this, contentEmailSignIn.bind(this, userEmail, userName));
     res
       .status(201)
-      .json({ message: "User is created successfully", user: newUser });
+      .json({ message: 'User is created successfully', user: newUser });
   } catch (err) {
     if (!err.statusCode) {
       err.statusCode = 500;
@@ -50,7 +54,7 @@ exports.signin = async (req, res, next) => {
 
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
-    const error = new Error("Invalid inputs");
+    const error = new Error('Invalid inputs');
     error.statusCode = 422;
     return next(error);
   }
@@ -58,14 +62,14 @@ exports.signin = async (req, res, next) => {
   try {
     const foundUser = await User.findOne({ email: userEmail });
     if (!foundUser) {
-      const error = new Error("user not found, please sign up!");
+      const error = new Error('user not found, please sign up!');
       error.statusCode = 404;
       throw error;
     }
 
     isEqual = await bcrypt.compare(userPassword, foundUser.password);
     if (!isEqual) {
-      const error = new Error("credentials is false!");
+      const error = new Error('credentials is false!');
       error.statusCode = 401;
       throw error;
     }
@@ -76,12 +80,12 @@ exports.signin = async (req, res, next) => {
         email: foundUser.email,
         name: foundUser.name,
       },
-      "topsecret237",
-      { expiresIn: "1h" }
+      'topsecret237',
+      { expiresIn: '1h' }
     );
 
     res.status(200).json({
-      message: "login successfully",
+      message: 'login successfully',
       token: token,
       userId: foundUser._id.toString(),
     });
